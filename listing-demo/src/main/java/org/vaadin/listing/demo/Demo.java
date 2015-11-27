@@ -47,6 +47,9 @@ public class Demo extends UI {
         layout.setWidth("575px");
 
         Listing.bind(layout, persons, PersonViewer.class);
+        // Alternative with lambdas, not depending on ListingChild interface:
+        // Listing.bind(layout, persons, PersonViewer::new,
+        // PersonViewer::setItem);
 
         VerticalLayout rootLayout = new VerticalLayout(buildActions(persons),
                 layout);
