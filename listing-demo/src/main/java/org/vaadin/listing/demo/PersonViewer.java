@@ -1,7 +1,5 @@
 package org.vaadin.listing.demo;
 
-import org.vaadin.listing.Listing.ListingChild;
-
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
@@ -12,7 +10,7 @@ import com.vaadin.ui.Label;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.VerticalLayout;
 
-public class PersonViewer extends CustomComponent implements ListingChild {
+public class PersonViewer extends CustomComponent {
 
     private final Label nameLabel = new Label();
     private final Label ageLabel = new Label();
@@ -27,7 +25,9 @@ public class PersonViewer extends CustomComponent implements ListingChild {
 
     private Item item;
 
-    public PersonViewer() {
+    public PersonViewer(Item item) {
+        this.item = item;
+
         nameLabel.setCaption("Name");
         ageLabel.setCaption("Age");
         activeLabel.setCaption("Active");
@@ -51,16 +51,6 @@ public class PersonViewer extends CustomComponent implements ListingChild {
 
         setWidthUndefined();
         setPrimaryStyleName("personViewer");
-    }
-
-    @Override
-    public void setItem(Item item) {
-        if (this.item != null) {
-            ((Property.ValueChangeNotifier) (Property<?>) this.item
-                    .getItemProperty("active"))
-                    .removeValueChangeListener(activeUpdater);
-        }
-        this.item = item;
 
         nameLabel.setPropertyDataSource(item.getItemProperty("name"));
         ageLabel.setPropertyDataSource(item.getItemProperty("age"));

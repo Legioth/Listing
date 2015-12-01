@@ -1,5 +1,7 @@
 package org.vaadin.listing;
 
+import java.lang.reflect.Constructor;
+
 import com.vaadin.data.Container;
 import com.vaadin.data.Container.Indexed.ItemAddEvent;
 import com.vaadin.data.Container.Indexed.ItemRemoveEvent;
@@ -58,12 +60,8 @@ public class Listing<T extends Component> {
         }
     }
 
-    public interface Binder<T> {
-        public void bind(T component, Item item);
-    }
-
-    public interface ComponentProvider<T> {
-        public T createComponent();
+    public interface ListingFactory<T> {
+        public T createAndBind(Item item);
     }
 
     public interface IndexBasedLayout {
@@ -74,22 +72,15 @@ public class Listing<T extends Component> {
         public int size();
     }
 
-    public interface ListingChild extends Component {
-        public void setItem(Item item);
-    }
-
     private final Container.Ordered container;
-    private final ComponentProvider<T> componentSupplier;
-    private final Binder<T> binder;
+    private ListingFactory<T> factory;
 
     private final IndexBasedLayout componentContainer;
 
     public Listing(IndexBasedLayout componentContainer,
-            Container.Ordered container,
-            ComponentProvider<T> componentSupplier, Binder<T> binder) {
+            Container.Ordered container, ListingFactory<T> factory) {
         this.container = container;
-        this.componentSupplier = componentSupplier;
-        this.binder = binder;
+        this.factory = factory;
         this.componentContainer = componentContainer;
 
         rebuild();
@@ -145,67 +136,52 @@ public class Listing<T extends Component> {
     }
 
     private T createAndBindComponent(Object itemId) {
-        T component = componentSupplier.createComponent();
-        binder.bind(component, container.getItem(itemId));
-        return component;
+        return factory.createAndBind(container.getItem(itemId));
     }
 
-    private static <T extends ListingChild> Listing<T> bind(
+    private static <T extends Component> Listing<T> bind(
             IndexBasedLayout layout, Container.Ordered container,
             final Class<T> type) {
-        verifyNoArgsConstructor(type);
-
-        return new Listing<T>(layout, container, new ComponentProvider<T>() {
-            @Override
-            public T createComponent() {
-                try {
-                    return type.newInstance();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+        try {
+            final Constructor<T> constructor = type.getConstructor(Item.class);
+            return new Listing<T>(layout, container, new ListingFactory<T>() {
+                @Override
+                public T createAndBind(Item item) {
+                    try {
+                        return constructor.newInstance(item);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
-        }, new Binder<T>() {
-            @Override
-            public void bind(T component, Item item) {
-                component.setItem(item);
-            }
-        });
+            });
+        } catch (SecurityException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(type.getName()
+                    + " must have an (Item) constructor");
+        }
+
     }
 
     public static <T extends Component> Listing<T> bind(final CssLayout layout,
-            Container.Ordered container,
-            ComponentProvider<T> componentSupplier, Binder<T> binder) {
-        return new Listing<T>(new CSSLayoutSupport(layout), container,
-                componentSupplier, binder);
+            Container.Ordered container, ListingFactory<T> factory) {
+        return new Listing<T>(new CSSLayoutSupport(layout), container, factory);
     }
 
     public static <T extends Component> Listing<T> bind(
             final AbstractOrderedLayout layout, Container.Ordered container,
-            ComponentProvider<T> componentSupplier, Binder<T> binder) {
-        return new Listing<T>(new AOLSupport(layout), container,
-                componentSupplier, binder);
+            ListingFactory<T> factory) {
+        return new Listing<T>(new AOLSupport(layout), container, factory);
     }
 
-    public static <T extends ListingChild> Listing<T> bind(CssLayout layout,
+    public static <T extends Component> Listing<T> bind(CssLayout layout,
             Container.Ordered container, Class<T> type) {
         return bind(new CSSLayoutSupport(layout), container, type);
     }
 
-    public static <T extends ListingChild> Listing<T> bind(
+    public static <T extends Component> Listing<T> bind(
             AbstractOrderedLayout layout, Container.Ordered container,
             Class<T> type) {
         return bind(new AOLSupport(layout), container, type);
-    }
-
-    private static <T extends ListingChild> void verifyNoArgsConstructor(
-            Class<T> type) {
-        try {
-            type.getConstructor();
-        } catch (SecurityException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e1) {
-            throw new IllegalArgumentException(type
-                    + " must have a no-args constructor");
-        }
     }
 }
