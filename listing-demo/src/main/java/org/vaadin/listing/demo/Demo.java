@@ -45,10 +45,14 @@ public class Demo extends UI {
 
         // Suitable width for 2 columns
         layout.setWidth("575px");
+        // VerticalLayout layout = new VerticalLayout();
 
-        Listing.bind(layout, persons, PersonViewer.class);
+
+        Listing.ofContainer(persons).inLayout(layout)
+                .withViewier(PersonViewer.class);
         // Alternative with lambda
-        // Listing.bind(layout, persons, PersonViewer::new);
+        // Listing.ofContainer(persons).inLayout(layout)
+        // .withViewier(PersonViewer::new);
 
         VerticalLayout rootLayout = new VerticalLayout(buildActions(persons),
                 layout);

@@ -1,6 +1,7 @@
 package org.vaadin.listing;
 
-import java.lang.reflect.Constructor;
+import org.vaadin.listing.builder.BuilderWithData;
+import org.vaadin.listing.builder.ListingBuilder;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Container.Indexed.ItemAddEvent;
@@ -9,57 +10,9 @@ import com.vaadin.data.Container.ItemSetChangeEvent;
 import com.vaadin.data.Container.ItemSetChangeListener;
 import com.vaadin.data.Container.ItemSetChangeNotifier;
 import com.vaadin.data.Item;
-import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.CssLayout;
 
 public class Listing<T extends Component> {
-    private static final class CSSLayoutSupport implements IndexBasedLayout {
-        private final CssLayout layout;
-
-        private CSSLayoutSupport(CssLayout layout) {
-            this.layout = layout;
-        }
-
-        @Override
-        public int size() {
-            return layout.getComponentCount();
-        }
-
-        @Override
-        public void remove(int index) {
-            layout.removeComponent(layout.getComponent(index));
-        }
-
-        @Override
-        public void add(Component component, int index) {
-            layout.addComponent(component, index);
-        }
-    }
-
-    private static final class AOLSupport implements IndexBasedLayout {
-        private final AbstractOrderedLayout layout;
-
-        private AOLSupport(AbstractOrderedLayout layout) {
-            this.layout = layout;
-        }
-
-        @Override
-        public int size() {
-            return layout.getComponentCount();
-        }
-
-        @Override
-        public void remove(int index) {
-            layout.removeComponent(layout.getComponent(index));
-        }
-
-        @Override
-        public void add(Component component, int index) {
-            layout.addComponent(component, index);
-        }
-    }
-
     public interface ListingFactory<T> {
         public T createAndBind(Item item);
     }
@@ -139,49 +92,7 @@ public class Listing<T extends Component> {
         return factory.createAndBind(container.getItem(itemId));
     }
 
-    private static <T extends Component> Listing<T> bind(
-            IndexBasedLayout layout, Container.Ordered container,
-            final Class<T> type) {
-        try {
-            final Constructor<T> constructor = type.getConstructor(Item.class);
-            return new Listing<T>(layout, container, new ListingFactory<T>() {
-                @Override
-                public T createAndBind(Item item) {
-                    try {
-                        return constructor.newInstance(item);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            });
-        } catch (SecurityException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException(type.getName()
-                    + " must have an (Item) constructor");
-        }
-
-    }
-
-    public static <T extends Component> Listing<T> bind(final CssLayout layout,
-            Container.Ordered container, ListingFactory<T> factory) {
-        return new Listing<T>(new CSSLayoutSupport(layout), container, factory);
-    }
-
-    public static <T extends Component> Listing<T> bind(
-            final AbstractOrderedLayout layout, Container.Ordered container,
-            ListingFactory<T> factory) {
-        return new Listing<T>(new AOLSupport(layout), container, factory);
-    }
-
-    public static <T extends Component> Listing<T> bind(CssLayout layout,
-            Container.Ordered container, Class<T> type) {
-        return bind(new CSSLayoutSupport(layout), container, type);
-    }
-
-    public static <T extends Component> Listing<T> bind(
-            AbstractOrderedLayout layout, Container.Ordered container,
-            Class<T> type) {
-        return bind(new AOLSupport(layout), container, type);
+    public static BuilderWithData ofContainer(final Container.Ordered container) {
+        return new ListingBuilder(container);
     }
 }
