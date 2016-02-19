@@ -12,7 +12,8 @@ import com.vaadin.ui.AbstractOrderedLayout;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.CssLayout;
 
-public class ListingBuilder implements BuilderWithData, BuilderWithLayout {
+public class ListingBuilder<T extends Item> implements BuilderWithData<T>,
+        BuilderWithLayout<T> {
     private static final class CSSLayoutSupport implements IndexBasedLayout {
         private final CssLayout layout;
 
@@ -67,19 +68,19 @@ public class ListingBuilder implements BuilderWithData, BuilderWithLayout {
     }
 
     @Override
-    public BuilderWithLayout inLayout(CssLayout layout) {
+    public BuilderWithLayout<T> inLayout(CssLayout layout) {
         this.layout = new CSSLayoutSupport(layout);
         return this;
     }
 
     @Override
-    public BuilderWithLayout inLayout(AbstractOrderedLayout layout) {
+    public BuilderWithLayout<T> inLayout(AbstractOrderedLayout layout) {
         this.layout = new AOLSupport(layout);
         return this;
     }
 
     @Override
-    public Listing withViewier(ListingFactory factory) {
+    public Listing withViewier(ListingFactory<T> factory) {
         return new Listing(layout, container, factory);
     }
 
@@ -88,7 +89,7 @@ public class ListingBuilder implements BuilderWithData, BuilderWithLayout {
         try {
             final Constructor<? extends Component> constructor = type
                     .getConstructor(Item.class);
-            return new Listing(layout, container, new ListingFactory() {
+            return new Listing(layout, container, new ListingFactory<Item>() {
                 @Override
                 public Component createAndBind(Item item) {
                     try {
