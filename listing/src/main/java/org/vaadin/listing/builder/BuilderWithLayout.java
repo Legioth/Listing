@@ -7,9 +7,8 @@ import com.vaadin.ui.Component;
 
 public interface BuilderWithLayout {
 
-    public <T extends Component> Listing<T> withViewier(
-            ListingFactory<T> factory);
+    public Listing withViewier(ListingFactory factory);
 
-    public <T extends Component> Listing<T> withViewier(Class<T> viewerType);
+    public Listing withViewier(Class<? extends Component> viewerType);
 
 }

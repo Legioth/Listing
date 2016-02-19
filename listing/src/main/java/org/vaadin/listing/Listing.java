@@ -12,9 +12,9 @@ import com.vaadin.data.Container.ItemSetChangeNotifier;
 import com.vaadin.data.Item;
 import com.vaadin.ui.Component;
 
-public class Listing<T extends Component> {
-    public interface ListingFactory<T> {
-        public T createAndBind(Item item);
+public class Listing {
+    public interface ListingFactory {
+        public Component createAndBind(Item item);
     }
 
     public interface IndexBasedLayout {
@@ -26,12 +26,12 @@ public class Listing<T extends Component> {
     }
 
     private final Container.Ordered container;
-    private ListingFactory<T> factory;
+    private ListingFactory factory;
 
     private final IndexBasedLayout componentContainer;
 
     public Listing(IndexBasedLayout componentContainer,
-            Container.Ordered container, ListingFactory<T> factory) {
+            Container.Ordered container, ListingFactory factory) {
         this.container = container;
         this.factory = factory;
         this.componentContainer = componentContainer;
@@ -58,7 +58,7 @@ public class Listing<T extends Component> {
             int addedItemsCount = addEvent.getAddedItemsCount();
 
             for (int i = 0; i < addedItemsCount; i++) {
-                T component = createAndBindComponent(itemId);
+                Component component = createAndBindComponent(itemId);
                 componentContainer.add(component, firstIndex + i);
                 itemId = container.nextItemId(itemId);
             }
@@ -82,13 +82,13 @@ public class Listing<T extends Component> {
         }
 
         for (Object itemId : container.getItemIds()) {
-            T component = createAndBindComponent(itemId);
+            Component component = createAndBindComponent(itemId);
 
             componentContainer.add(component, componentContainer.size());
         }
     }
 
-    private T createAndBindComponent(Object itemId) {
+    private Component createAndBindComponent(Object itemId) {
         return factory.createAndBind(container.getItem(itemId));
     }
 

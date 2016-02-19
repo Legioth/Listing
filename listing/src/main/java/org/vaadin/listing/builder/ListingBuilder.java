@@ -79,18 +79,18 @@ public class ListingBuilder implements BuilderWithData, BuilderWithLayout {
     }
 
     @Override
-    public <T extends Component> Listing<T> withViewier(
-            ListingFactory<T> factory) {
-        return new Listing<T>(layout, container, factory);
+    public Listing withViewier(ListingFactory factory) {
+        return new Listing(layout, container, factory);
     }
 
     @Override
-    public <T extends Component> Listing<T> withViewier(Class<T> type) {
+    public Listing withViewier(Class<? extends Component> type) {
         try {
-            final Constructor<T> constructor = type.getConstructor(Item.class);
-            return new Listing<T>(layout, container, new ListingFactory<T>() {
+            final Constructor<? extends Component> constructor = type
+                    .getConstructor(Item.class);
+            return new Listing(layout, container, new ListingFactory() {
                 @Override
-                public T createAndBind(Item item) {
+                public Component createAndBind(Item item) {
                     try {
                         return constructor.newInstance(item);
                     } catch (Exception e) {
@@ -107,9 +107,9 @@ public class ListingBuilder implements BuilderWithData, BuilderWithLayout {
     }
 
     @Override
-    public Listing<?> inDesign(AbstractOrderedLayout layoutInDesign) {
-        return new Listing<Component>(new AOLSupport(layoutInDesign),
-                container, new DesignListingFactory(layoutInDesign));
+    public Listing inDesign(AbstractOrderedLayout layoutInDesign) {
+        return new Listing(new AOLSupport(layoutInDesign), container,
+                new DesignListingFactory(layoutInDesign));
     }
 
 }

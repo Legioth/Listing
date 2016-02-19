@@ -20,7 +20,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.declarative.DesignContext;
 import com.vaadin.ui.declarative.DesignException;
 
-public class DesignListingFactory implements ListingFactory<Component> {
+public class DesignListingFactory implements ListingFactory {
 
     private Element itemComponentDesign;
 

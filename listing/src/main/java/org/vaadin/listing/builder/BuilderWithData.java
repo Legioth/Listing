@@ -11,6 +11,6 @@ public interface BuilderWithData {
 
     BuilderWithLayout inLayout(AbstractOrderedLayout layout);
 
-    Listing<?> inDesign(AbstractOrderedLayout layout);
+    Listing inDesign(AbstractOrderedLayout layout);
 
 }
