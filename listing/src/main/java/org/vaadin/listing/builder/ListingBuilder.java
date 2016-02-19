@@ -106,4 +106,10 @@ public class ListingBuilder implements BuilderWithData, BuilderWithLayout {
         }
     }
 
+    @Override
+    public Listing<?> inDesign(AbstractOrderedLayout layoutInDesign) {
+        return new Listing<Component>(new AOLSupport(layoutInDesign),
+                container, new DesignListingFactory(layoutInDesign));
+    }
+
 }
